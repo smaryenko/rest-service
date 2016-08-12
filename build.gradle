@@ -1,0 +1,35 @@
+task wrapper(type: Wrapper) {
+    gradleVersion = '2.3'
+}
+
+apply plugin: 'java'
+
+compileJava {
+	options.setDeprecation(true)
+}
+
+project(':service') {
+   task cleanService	(dependsOn: 'clean')
+   task buildService	(dependsOn: 'build')
+   task runService		(dependsOn: 'startServer')
+   
+   task runApplication	(dependsOn: [
+									'cleanService', 
+									'buildService', 
+									'runService'
+								   ])
+
+		buildService.mustRunAfter cleanService
+		runService.mustRunAfter buildService
+}
+
+project(':test') {
+	task testAll(dependsOn: 'test')
+	
+	task runTests		(dependsOn: [
+									 project(':service').runApplication, 
+									 'testAll'
+									])
+									
+		testAll.mustRunAfter project(':service').runApplication
+}
